@@ -10,7 +10,7 @@
 // @updateURL    https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @downloadURL  https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @require      https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @version      0.7.5
+// @version      0.7.6
 // @description  Select tags and copy to clipboard. Category filtering, +/- weight, SD/NAI format, silent mode, collapsible categories, tag filter.
 // @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、不通知模式、折叠分类、筛选标签
 // @author       FSpark / kozeki-uii
@@ -45,6 +45,9 @@
             margin: 6px 0;
             font-size: 13px;
             line-height: 1.5;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: left;
         }
         #tags-exporter-setting h2 {
             margin: 0 0 4px 0;
@@ -71,6 +74,10 @@
             gap: 3px;
         }
         #tags-exporter-setting .opt-row label input { margin: 0; }
+        #tags-exporter-setting .opt-row > span:first-child {
+            min-width: 3.5em;
+            flex-shrink: 0;
+        }
         #tags-exporter-setting .hint {
             font-size: 11px; color: #aaa; margin-left: 6px;
         }
@@ -196,7 +203,7 @@
 
         /* 预览（多行） */
         #export-preview {
-            font-size: 11px;
+            font-size: 10px;
             color: #999;
             line-height: 1.4;
             margin: 2px 0;
@@ -283,14 +290,14 @@
         '</div>',
         '<div id="weight-format-group" style="display:none">',
         '  <div class="opt-row">',
-        '    <span>格式：</span>',
+        '    <span>格式:</span>',
         '    <span class="seg-group">',
         '      <label><input type="radio" name="wf" value="sd" checked/><span class="seg">SD</span></label>',
         '      <label><input type="radio" name="wf" value="nai"/><span class="seg">NAI</span></label>',
         '    </span>',
         '  </div>',
         '  <div class="opt-row">',
-        '    <span>步进：</span>',
+        '    <span>步进:</span>',
         '    <span class="seg-group">',
         '      <label><input type="radio" name="wstep" value="0.1"/><span class="seg">0.1</span></label>',
         '      <label><input type="radio" name="wstep" value="0.5" checked/><span class="seg">0.5</span></label>',
