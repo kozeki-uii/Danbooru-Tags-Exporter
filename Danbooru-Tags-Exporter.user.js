@@ -10,11 +10,10 @@
 // @updateURL    https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @downloadURL  https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @require      https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @version      0.6.0
-// @description  Select tags and copy to clipboard. Category filtering, +/- weight, SD/NAI format, silent mode.
-// @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、静默模式
-// @description:zh-TW  選擇標籤複製到剪貼板，分類提取、加減權重、SD/NAI 格式、靜默模式
-// @description:zh-HK  選擇標籤複製到剪貼板，分類提取、加減權重、SD/NAI 格式、靜默模式
+// @version      0.7.0
+// @description  Select tags and copy to clipboard. Category filtering, +/- weight, SD/NAI format, silent mode, collapsible categories, tag filter.
+// @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、静默模式、折叠分类、筛选标签
+// @description:zh-TW  選擇標籤複製到剪貼板，分類提取、加減權重、SD/NAI 格式、靜默模式、折疊分類、篩選標籤
 // @author       FSpark / kozeki-uii
 // @match        https://danbooru.donmai.us/posts/*
 // @match        https://safebooru.donmai.us/posts/*
@@ -33,7 +32,6 @@
 (function () {
     'use strict';
 
-    // 防止重复注入
     if (document.getElementById('tags-exporter-setting')) return;
 
     // ============================================================
@@ -76,6 +74,39 @@
             padding: 1px 4px;
             border-radius: 3px;
         }
+        #tags-exporter-setting .hint {
+            font-size: 11px; color: #aaa; margin-left: 6px;
+        }
+
+        /* 搜索框 */
+        #tag-filter {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 3px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 3px 0;
+            outline: none;
+        }
+        #tag-filter:focus { border-color: #888; }
+        @media (prefers-color-scheme: dark) {
+            #tag-filter {
+                background: #333; border-color: #555; color: #ddd;
+            }
+            #tag-filter:focus { border-color: #888; }
+            #tag-filter::placeholder { color: #777; }
+        }
+
+        /* 预览栏 */
+        #export-preview {
+            font-size: 11px;
+            color: #999;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-height: 1.2em;
+        }
 
         #tags-exporter-container {
             display: flex;
@@ -97,6 +128,23 @@
         #tags-exporter-container button:hover, #tag-list button:hover { background: #eee; }
         #tags-exporter-container button:active, #tag-list button:active { background: #ddd; }
 
+        /* 折叠指示器 */
+        .ci {
+            display: inline-block;
+            width: 14px;
+            font-size: 10px;
+            color: #aaa;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.15s;
+        }
+        h3.artist-tag-list, h3.character-tag-list,
+        h3.copyright-tag-list, h3.meta-tag-list, h3.general-tag-list {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* 权重控件 */
         .tag-weight {
             display: inline-flex;
             align-items: center;
@@ -121,14 +169,13 @@
 
         .tag-count {
             font-size: 12px; color: #999; margin-left: 6px;
+            cursor: default;
         }
         #tag-summary {
             font-size: 11px; color: #aaa; margin-top: 2px;
         }
 
-        #weight-format-group .opt-row {
-            margin: 2px 0;
-        }
+        #weight-format-group .opt-row { margin: 2px 0; }
 
         /* Toast */
         #exporter-toast {
@@ -160,13 +207,13 @@
             .tag-weight .w-val { color: #ccc; }
             .tag-count { color: #999; }
             #tag-summary { color: #888; }
+            .ci { color: #777; }
+            #export-preview { color: #888; }
         }
 
         /* Gelbooru 覆写 */
         body:not(.default-css) #tags-exporter-setting h2 { font-size: 1.2em; }
-        body:not(.default-css) #tags-exporter-setting {
-            margin: 0 10px;
-        }
+        body:not(.default-css) #tags-exporter-setting { margin: 0 10px; }
         body:not(.default-css) #tags-exporter-container button,
         body:not(.default-css) #tag-list button { padding: 0.1em 0.3em; margin-bottom: 0.1em; }
         body:not(.default-css) #tags-exporter-container { margin: 0 10px; }
@@ -190,12 +237,12 @@
     }
 
     // ============================================================
-    //  设置面板（紧凑布局）
+    //  设置面板
     // ============================================================
     var panel = document.createElement('section');
     panel.id = 'tags-exporter-setting';
     panel.innerHTML = [
-        '<h2>Danbooru 标签导出器</h2>',
+        '<h2>Danbooru 标签导出器 <span class="hint">Ctrl+Shift+E</span></h2>',
         '<div class="opt-row">',
         '  <label><input type="checkbox" id="bracket-escape" checked/> 转义括号</label>',
         '  <label><input type="checkbox" id="export-metadata" checked/> 元数据</label>',
@@ -213,11 +260,13 @@
         '    <label><input type="radio" name="wstep" value="1"/> 1</label>',
         '  </div>',
         '</div>',
+        '<input type="text" id="tag-filter" placeholder="筛选标签..." />',
+        '<div id="export-preview"></div>',
         '<div id="tag-summary"></div>'
-    ].join('\n');
+    ].join('');
 
     // ============================================================
-    //  操作按钮模板
+    //  按钮模板
     // ============================================================
     var btnTpl = document.createElement('div');
     btnTpl.id = 'tags-exporter-container';
@@ -236,23 +285,19 @@
         ref.parentNode.insertBefore(n, ref.nextSibling);
     }
 
-    function getRef(sel) {
-        var el = document.querySelector(sel);
-        return el;
-    }
+    var isGel = location.host === 'gelbooru.com';
 
     // ============================================================
     //  插入面板
     // ============================================================
-    var isGel = location.host === 'gelbooru.com';
     if (isGel) {
-        var ref = getRef('.aside>.tag-list');
+        var ref = document.querySelector('.aside>.tag-list');
         if (ref) {
             ref.parentNode.insertBefore(panel, ref);
             ref.parentNode.insertBefore(btnTpl, ref);
         }
     } else {
-        var sb = getRef('#search-box');
+        var sb = document.querySelector('#search-box');
         if (sb) {
             insertAfter(panel, sb);
             var h2 = panel.querySelector('h2');
@@ -261,7 +306,7 @@
     }
 
     // ============================================================
-    //  权重格式化
+    //  权重
     // ============================================================
     function fmtWeight(tag, val, fmt) {
         if (val === 0) return tag;
@@ -274,20 +319,13 @@
     }
 
     function adjWeight(cur, delta, fmt, step) {
-        var nv = cur + delta * step;
-        nv = Math.round(nv * 100) / 100;
-        if (fmt === 'sd') {
-            if (nv < 0) return 0;
-            if (nv > 3) return 3;
-            return nv;
-        }
-        if (nv > 5) return 5;
-        if (nv < -5) return -5;
-        return nv;
+        var nv = Math.round((cur + delta * step) * 100) / 100;
+        if (fmt === 'sd') { if (nv < 0) return 0; if (nv > 3) return 3; return nv; }
+        if (nv > 5) return 5; if (nv < -5) return -5; return nv;
     }
 
     // ============================================================
-    //  导出（防抖 + 去重 + 静默）
+    //  导出
     // ============================================================
     var locked = false;
 
@@ -300,18 +338,14 @@
         var wOn = document.getElementById('set-weight').checked;
         var meta = document.getElementById('export-metadata').checked;
         var silent = document.getElementById('silent-export').checked;
-        var fmtEl = document.querySelector('input[name="wf"]:checked');
-        var fmt = fmtEl ? fmtEl.value : 'sd';
-        var stepEl = document.querySelector('input[name="wstep"]:checked');
-        var step = stepEl ? parseFloat(stepEl.value) : 0.5;
+        var fmt = (document.querySelector('input[name="wf"]:checked') || {}).value || 'sd';
+        var step = parseFloat((document.querySelector('input[name="wstep"]:checked') || {}).value || '0.5');
 
         var out = [], seen = new Set();
 
         document.querySelectorAll(target).forEach(function (cb) {
             var li = cb.closest('li');
-            if (li) {
-                if (li.closest('.meta-tag-list, .tag-type-metadata') && !meta) return;
-            }
+            if (li && li.closest('.meta-tag-list, .tag-type-metadata') && !meta) return;
 
             var tag = cb.value;
             var key = tag.toLowerCase().trim();
@@ -319,20 +353,14 @@
             seen.add(key);
 
             tag = tag.replaceAll('_', ' ');
-
-            if (esc) {
-                tag = tag.replaceAll('(', '\\(').replaceAll(')', '\\)');
-            }
-
-            if (wOn) {
-                var wc = li ? li.querySelector('.tag-weight') : null;
+            if (esc) tag = tag.replaceAll('(', '\\(').replaceAll(')', '\\)');
+            if (wOn && li) {
+                var wc = li.querySelector('.tag-weight');
                 if (wc) {
-                    var vs = wc.querySelector('.w-val');
-                    var v = parseFloat(vs.textContent) || 0;
+                    var v = parseFloat(wc.querySelector('.w-val').textContent) || 0;
                     tag = fmtWeight(tag, v, fmt);
                 }
             }
-
             out.push(tag);
         });
 
@@ -354,14 +382,12 @@
     var SKEY = 'dte_settings_v3';
 
     function save() {
-        var wf = document.querySelector('input[name="wf"]:checked');
-        var ws = document.querySelector('input[name="wstep"]:checked');
         GM_setValue(SKEY, {
             be: document.getElementById('bracket-escape').checked,
             em: document.getElementById('export-metadata').checked,
             sw: document.getElementById('set-weight').checked,
-            wf: wf ? wf.value : 'sd',
-            ws: ws ? ws.value : '0.5',
+            wf: (document.querySelector('input[name="wf"]:checked') || {}).value || 'sd',
+            ws: (document.querySelector('input[name="wstep"]:checked') || {}).value || '0.5',
             se: document.getElementById('silent-export').checked
         });
     }
@@ -370,18 +396,17 @@
         var s = GM_getValue(SKEY, null);
         if (!s) return;
         var el;
-        el = document.getElementById('bracket-escape');      if (el && s.be !== undefined) el.checked = s.be;
-        el = document.getElementById('export-metadata');    if (el && s.em !== undefined) el.checked = s.em;
-        el = document.getElementById('silent-export');      if (el && s.se !== undefined) el.checked = s.se;
-        el = document.getElementById('set-weight');         if (el && s.sw !== undefined) { el.checked = s.sw; fire(el, 'change'); }
-        if (s.wf) { var r1 = document.querySelector('input[name="wf"][value="' + s.wf + '"]'); if (r1) { r1.checked = true; fire(r1, 'change'); } }
-        if (s.ws) { var r2 = document.querySelector('input[name="wstep"][value="' + s.ws + '"]'); if (r2) r2.checked = true; }
+        el = document.getElementById('bracket-escape');   if (el && s.be !== undefined) el.checked = s.be;
+        el = document.getElementById('export-metadata'); if (el && s.em !== undefined) el.checked = s.em;
+        el = document.getElementById('silent-export');   if (el && s.se !== undefined) el.checked = s.se;
+        el = document.getElementById('set-weight');      if (el && s.sw !== undefined) { el.checked = s.sw; fire(el, 'change'); }
+        if (s.wf) { var r = document.querySelector('input[name="wf"][value="' + s.wf + '"]'); if (r) { r.checked = true; fire(r, 'change'); } }
+        if (s.ws) { var r = document.querySelector('input[name="wstep"][value="' + s.ws + '"]'); if (r) r.checked = true; }
     }
 
     function fire(el, ev) {
         var e = document.createEvent('HTMLEvents');
-        e.initEvent(ev, false, true);
-        el.dispatchEvent(e);
+        e.initEvent(ev, false, true); el.dispatchEvent(e);
     }
 
     document.addEventListener('change', function (e) {
@@ -390,14 +415,40 @@
     });
 
     // ============================================================
-    //  计数
+    //  计数 / 预览 / 提示
     // ============================================================
+    var previewDebounce = null;
+
+    function updPreviewAndTooltip() {
+        var names = [];
+        document.querySelectorAll('#tag-list input[type="checkbox"]:checked, .tag-list input[type="checkbox"]:checked')
+            .forEach(function (cb) { names.push(cb.value.replaceAll('_', ' ')); });
+
+        // 预览（前 60 字符）
+        var preEl = document.getElementById('export-preview');
+        if (preEl) {
+            if (!names.length) { preEl.textContent = ''; }
+            else {
+                var full = names.join(', ');
+                preEl.textContent = full.length > 60 ? full.slice(0, 57) + '...' : full;
+            }
+        }
+
+        // tooltip（完整列表）
+        var tip = names.length ? names.join(', ') : '';
+        document.querySelectorAll('.tag-count').forEach(function (el) { el.title = tip; });
+    }
+
     function updCount(ctx) {
         if (!ctx) ctx = document;
         var c = ctx.querySelectorAll('input[type="checkbox"][name$="s"]:checked').length;
         var t = ctx.querySelectorAll('input[type="checkbox"][name$="s"]').length;
         var el = ctx.querySelector('.tag-count');
         if (el) el.textContent = c > 0 ? (c + '/' + t) : '';
+
+        // 延迟合并的预览更新
+        if (previewDebounce) clearTimeout(previewDebounce);
+        previewDebounce = setTimeout(updPreviewAndTooltip, 50);
     }
 
     function summary() {
@@ -418,7 +469,7 @@
     }
 
     // ============================================================
-    //  分类按钮
+    //  分类按钮绑定
     // ============================================================
     function bindBtns(ct, prefix) {
         ct.querySelector("[name='select_all']").onclick = function () {
@@ -439,7 +490,59 @@
     }
 
     // ============================================================
-    //  Danbooru 分类
+    //  分类折叠（仅 Danbooru）
+    // ============================================================
+    function initCollapse() {
+        if (isGel) return;
+        document.querySelectorAll('h3.artist-tag-list, h3.character-tag-list, h3.copyright-tag-list, h3.meta-tag-list, h3.general-tag-list')
+            .forEach(function (h3) {
+                var ind = document.createElement('span');
+                ind.className = 'ci';
+                ind.textContent = '▼';
+                h3.insertBefore(ind, h3.firstChild);
+
+                h3.addEventListener('click', function () {
+                    var collapsed = h3.classList.toggle('collapsed');
+                    var next = h3.nextElementSibling;
+                    if (next) {
+                        next.style.display = collapsed ? 'none' : '';
+                        var ul = next.nextElementSibling;
+                        if (ul && ul.tagName === 'UL') ul.style.display = collapsed ? 'none' : '';
+                    }
+                    ind.textContent = collapsed ? '▶' : '▼';
+                });
+            });
+    }
+
+    // ============================================================
+    //  标签搜索过滤
+    // ============================================================
+    function initTagFilter() {
+        var input = document.getElementById('tag-filter');
+        if (!input) return;
+        input.addEventListener('input', function () {
+            var q = this.value.toLowerCase().trim();
+            document.querySelectorAll('#tag-list li, .tag-list li').forEach(function (li) {
+                if (!q) { li.style.display = ''; return; }
+                var cb = li.querySelector('input[type="checkbox"]');
+                var name = cb ? cb.value.toLowerCase() : '';
+                li.style.display = name.indexOf(q) > -1 ? '' : 'none';
+            });
+        });
+    }
+
+    // ============================================================
+    //  快捷键 Ctrl+Shift+E
+    // ============================================================
+    document.addEventListener('keydown', function (e) {
+        if (e.ctrlKey && e.shiftKey && (e.key === 'e' || e.key === 'E')) {
+            e.preventDefault();
+            doExport('#tag-list input[type="checkbox"]:checked, .tag-list input[type="checkbox"]:checked');
+        }
+    });
+
+    // ============================================================
+    //  插入 Danbooru 分类
     // ============================================================
     function insDan(t) {
         var h = document.querySelector('h3.' + t + '-list');
@@ -464,7 +567,7 @@
     }
 
     // ============================================================
-    //  Gelbooru 分类
+    //  插入 Gelbooru 分类
     // ============================================================
     function insGel(t) {
         var el = document.querySelector('.' + t);
@@ -493,9 +596,7 @@
     // ============================================================
     //  挂载
     // ============================================================
-    // Danbooru — 注意 Meta 用的是 meta-tag-list，不是 metadata-tag-list
     ['artist-tag', 'character-tag', 'copyright-tag', 'meta-tag', 'general-tag'].forEach(insDan);
-    // Gelbooru
     ['tag-type-artist', 'tag-type-character', 'tag-type-copyright', 'tag-type-metadata', 'tag-type-general'].forEach(insGel);
 
     // ============================================================
@@ -525,12 +626,14 @@
     updCount();
 
     // ============================================================
-    //  总标签数
+    //  初始化
     // ============================================================
     summary();
+    initCollapse();
+    initTagFilter();
 
     // ============================================================
-    //  权重开关
+    //  事件绑定
     // ============================================================
     document.getElementById('set-weight').onchange = function (e) {
         var v = e.target.checked;
@@ -538,9 +641,6 @@
         document.getElementById('weight-format-group').style.display = v ? 'block' : 'none';
     };
 
-    // ============================================================
-    //  元数据开关（Danbooru: .meta-tag-list, Gelbooru: .tag-type-metadata）
-    // ============================================================
     document.getElementById('export-metadata').onchange = function (e) {
         var v = e.target.checked;
         document.querySelectorAll('.meta-tag-list, .tag-type-metadata').forEach(function (el) {
@@ -551,9 +651,6 @@
         });
     };
 
-    // ============================================================
-    //  ± 按钮
-    // ============================================================
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('.w-btn');
         if (!btn) return;
@@ -568,9 +665,6 @@
         vs.textContent = adjWeight(cur, d, fmt, step).toFixed(step >= 1 ? 0 : 1);
     });
 
-    // ============================================================
-    //  切换格式 → 修正值
-    // ============================================================
     document.querySelectorAll('input[name="wf"]').forEach(function (r) {
         r.addEventListener('change', function () {
             var fmt = this.value;
@@ -587,9 +681,6 @@
         });
     });
 
-    // ============================================================
-    //  加载已保存设置
-    // ============================================================
     load();
 
 })();
