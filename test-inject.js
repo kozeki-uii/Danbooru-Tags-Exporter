@@ -10,7 +10,7 @@
 // @updateURL    https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @downloadURL  https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @require      https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @version      0.8.4
+// @version      0.8.2
 // @description  Select tags and copy to clipboard. Category filtering, +/- weight, SD/NAI format, silent mode, collapsible categories, tag filter.
 // @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、关闭通知、折叠分类、筛选标签
 // @author       FSpark / kozeki-uii
@@ -165,9 +165,9 @@
             cursor: pointer;
             user-select: none;
         }
-        .ci:hover { color: #666; }
         h3.artist-tag-list, h3.character-tag-list,
         h3.copyright-tag-list, h3.meta-tag-list, h3.general-tag-list {
+            cursor: pointer;
             user-select: none;
         }
 
@@ -370,7 +370,7 @@
     //  权重
     // ============================================================
     function fmtWeight(tag, val, fmt) {
-        if (val === 1) return tag;
+        if (val === 0) return tag;
         var s = val.toFixed(1);
         if (fmt === 'nai') {
             var close = /[0-9]$/.test(tag) ? ' ::' : '::';
@@ -526,7 +526,7 @@
         var c = document.createElement('span');
         c.className = 'tag-weight';
         c.style.display = 'none';
-        c.innerHTML = '<button class="w-btn wm" type="button">−</button><span class="w-val">1</span><button class="w-btn wp" type="button">+</button>';
+        c.innerHTML = '<button class="w-btn wm" type="button">−</button><span class="w-val">0</span><button class="w-btn wp" type="button">+</button>';
         return c;
     }
 
@@ -563,8 +563,7 @@
                 ind.textContent = '▼';
                 h3.insertBefore(ind, h3.firstChild);
 
-                ind.addEventListener('click', function (e) {
-                    e.stopPropagation();
+                h3.addEventListener('click', function () {
                     var collapsed = h3.classList.toggle('collapsed');
                     var next = h3.nextElementSibling;
                     if (next) {
