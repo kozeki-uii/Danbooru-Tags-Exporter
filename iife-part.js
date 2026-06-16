@@ -1,29 +1,4 @@
-// ==UserScript==
-// @name         Danbooru Tags Select to Export
-// @name:zh-TW   Danbooru 标签导出器
-// @name:zh-HK   Danbooru 标签导出器
-// @name:zh-CN   Danbooru 标签导出器
-// @name:ja      Danbooru Tags Select to Export
-// @namespace    https://github.com/kozeki-uii/Danbooru-Tags-Exporter
-// @supportURL   https://github.com/kozeki-uii/Danbooru-Tags-Exporter/issues
-// @homepageURL  https://github.com/kozeki-uii/Danbooru-Tags-Exporter
-// @updateURL    https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
-// @downloadURL  https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
-// @require      https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @version      0.8.3
-// @description  Select tags and copy to clipboard. Category filtering, +/- weight, SD/NAI format, silent mode, collapsible categories, tag filter.
-// @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、关闭通知、折叠分类、筛选标签
-// @author       FSpark / kozeki-uii
-// @match        https://danbooru.donmai.us/posts/*
-// @match        https://safebooru.donmai.us/posts/*
-// @match        https://aibooru.online/posts/*
-// @match        https://betabooru.donmai.us/posts/*
-// @match        https://gelbooru.com/index.php?page=post&s=view&id=*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=donmai.us
-// @grant        GM.setClipboard
-// @grant        GM.notification
-// @grant        GM.addStyle
-// @grant        GM_getValue
+﻿// @grant        GM_getValue
 // @grant        GM_setValue
 // @license      AGPL-3.0
 // ==/UserScript==
@@ -34,7 +9,7 @@
     if (document.getElementById('tags-exporter-setting')) return;
 
     // ============================================================
-    //  样式
+    //  鏍峰紡
     // ============================================================
     GM.addStyle(`
         #tags-exporter-setting {
@@ -82,7 +57,7 @@
             font-size: 11px; color: #aaa; margin-left: 6px;
         }
 
-        /* 分段选择器 */
+        /* 鍒嗘閫夋嫨鍣?*/
         .seg-group {
             display: inline-flex;
             border: 1px solid #bbb;
@@ -111,7 +86,7 @@
             color: #fff;
         }
 
-        /* 操作按钮组（全选、取消、反选、导出） */
+        /* 鎿嶄綔鎸夐挳缁勶紙鍏ㄩ€夈€佸彇娑堛€佸弽閫夈€佸鍑猴級 */
         .action-group {
             display: inline-flex;
             border: 1px solid #bbb;
@@ -143,7 +118,7 @@
             justify-content: flex-start;
         }
 
-        /* 搜索框 */
+        /* 鎼滅储妗?*/
         #tag-filter {
             box-sizing: border-box;
             width: 100%;
@@ -156,7 +131,7 @@
         }
         #tag-filter:focus { border-color: #888; }
 
-        /* 折叠指示器 */
+        /* 鎶樺彔鎸囩ず鍣?*/
         .ci {
             display: inline-block;
             width: 14px;
@@ -165,13 +140,13 @@
             cursor: pointer;
             user-select: none;
         }
-        .ci:hover { color: #666; }
         h3.artist-tag-list, h3.character-tag-list,
         h3.copyright-tag-list, h3.meta-tag-list, h3.general-tag-list {
+            cursor: pointer;
             user-select: none;
         }
 
-        /* 权重控件 */
+        /* 鏉冮噸鎺т欢 */
         .tag-weight {
             display: inline-flex;
             align-items: center;
@@ -201,7 +176,7 @@
             font-size: 11px; color: #aaa; margin-top: 2px;
         }
 
-        /* 预览（多行） */
+        /* 棰勮锛堝琛岋級 */
         #export-preview {
             font-size: 10px;
             color: #999;
@@ -212,7 +187,7 @@
 
         #weight-format-group .opt-row { margin: 2px 0; }
 
-        /* 搜索高亮 */
+        /* 鎼滅储楂樹寒 */
         .phl {
             background: #ffc107;
             color: #333;
@@ -235,7 +210,7 @@
         }
         #exporter-toast.show { opacity: 0.95; }
 
-        /* 暗色 */
+        /* 鏆楄壊 */
         @media (prefers-color-scheme: dark) {
             #tags-exporter-setting {
                 background: rgba(255,255,255,0.04);
@@ -261,7 +236,7 @@
             .action-group .act-btn:hover { background: #4a4a4a; }
         }
 
-        /* Gelbooru 覆写 */
+        /* Gelbooru 瑕嗗啓 */
         body:not(.default-css) #tags-exporter-setting h2 { font-size: 1.2em; }
         body:not(.default-css) #tags-exporter-setting { margin: 0 10px; }
         body:not(.default-css) #tags-exporter-container button,
@@ -287,28 +262,28 @@
     }
 
     // ============================================================
-    //  设置面板
+    //  璁剧疆闈㈡澘
     // ============================================================
     var panel = document.createElement('section');
     panel.id = 'tags-exporter-setting';
     panel.innerHTML = [
-        '<h2>Danbooru 标签复制器 <span class="hint">快捷复制:Ctrl+Shift+E</span></h2>',
+        '<h2>Danbooru 鏍囩澶嶅埗鍣?<span class="hint">蹇嵎澶嶅埗:Ctrl+Shift+E</span></h2>',
         '<div class="opt-row">',
-        '  <label><input type="checkbox" id="bracket-escape" checked/> 转义括号</label>',
-        '  <label><input type="checkbox" id="export-metadata" checked/> 元数据</label>',
-        '  <label><input type="checkbox" id="set-weight"/> 权重</label>',
-        '  <label><input type="checkbox" id="silent-export"/> 关闭通知</label>',
+        '  <label><input type="checkbox" id="bracket-escape" checked/> 杞箟鎷彿</label>',
+        '  <label><input type="checkbox" id="export-metadata" checked/> 鍏冩暟鎹?/label>',
+        '  <label><input type="checkbox" id="set-weight"/> 鏉冮噸</label>',
+        '  <label><input type="checkbox" id="silent-export"/> 鍏抽棴閫氱煡</label>',
         '</div>',
         '<div id="weight-format-group" style="display:none">',
         '  <div class="opt-row">',
-        '    <span>格式:</span>',
+        '    <span>鏍煎紡:</span>',
         '    <span class="seg-group">',
         '      <label><input type="radio" name="wf" value="sd" checked/><span class="seg">SD</span></label>',
         '      <label><input type="radio" name="wf" value="nai"/><span class="seg">NAI</span></label>',
         '    </span>',
         '  </div>',
         '  <div class="opt-row">',
-        '    <span>步进:</span>',
+        '    <span>姝ヨ繘:</span>',
         '    <span class="seg-group">',
         '      <label><input type="radio" name="wstep" value="0.1"/><span class="seg">0.1</span></label>',
         '      <label><input type="radio" name="wstep" value="0.5" checked/><span class="seg">0.5</span></label>',
@@ -316,28 +291,28 @@
         '    </span>',
         '  </div>',
         '</div>',
-        '<input type="text" id="tag-filter" placeholder="筛选标签..." />',
+        '<input type="text" id="tag-filter" placeholder="绛涢€夋爣绛?.." />',
         '<div id="export-preview"></div>',
         '<div id="tag-summary"></div>'
     ].join('');
 
     // ============================================================
-    //  按钮模板
+    //  鎸夐挳妯℃澘
     // ============================================================
     var btnTpl = document.createElement('div');
     btnTpl.id = 'tags-exporter-container';
     btnTpl.innerHTML = [
         '<span class="action-group">',
-        '  <button name="select_all" class="act-btn">全选</button>',
-        '  <button name="select_none" class="act-btn">取消</button>',
-        '  <button name="invert_select" class="act-btn">反选</button>',
-        '  <button name="export" class="act-btn">复制</button>',
+        '  <button name="select_all" class="act-btn">鍏ㄩ€?/button>',
+        '  <button name="select_none" class="act-btn">鍙栨秷</button>',
+        '  <button name="invert_select" class="act-btn">鍙嶉€?/button>',
+        '  <button name="export" class="act-btn">澶嶅埗</button>',
         '</span>',
         '<span class="tag-count"></span>'
     ].join('');
 
     // ============================================================
-    //  DOM 工具
+    //  DOM 宸ュ叿
     // ============================================================
     function insertAfter(n, ref) {
         ref.parentNode.insertBefore(n, ref.nextSibling);
@@ -346,7 +321,7 @@
     var isGel = location.host === 'gelbooru.com';
 
     // ============================================================
-    //  插入面板
+    //  鎻掑叆闈㈡澘
     // ============================================================
     if (isGel) {
         var ref = document.querySelector('.aside>.tag-list');
@@ -355,8 +330,7 @@
             ref.parentNode.insertBefore(btnTpl, ref);
         }
     } else {
-        // 按优先级查找插入点：#tag-list → #search-box → 第一个标签分类标题
-        var ref = document.querySelector('#tag-list')
+        // 鎸変紭鍏堢骇鏌ユ壘鎻掑叆鐐癸細#tag-list 鈫?#search-box 鈫?绗竴涓爣绛惧垎绫绘爣棰?        var ref = document.querySelector('#tag-list')
                || document.querySelector('#search-box')
                || document.querySelector('h3.artist-tag-list, h3.general-tag-list');
         if (ref) {
@@ -367,7 +341,7 @@
     }
 
     // ============================================================
-    //  权重
+    //  鏉冮噸
     // ============================================================
     function fmtWeight(tag, val, fmt) {
         if (val === 0) return tag;
@@ -386,7 +360,7 @@
     }
 
     // ============================================================
-    //  导出
+    //  瀵煎嚭
     // ============================================================
     var locked = false;
 
@@ -426,20 +400,19 @@
         });
 
         if (!out.length) {
-            if (silent) showToast('没有选中任何标签！');
-            else GM.notification('没有选中任何标签！', 'Danbooru 标签导出器');
+            if (silent) showToast('娌℃湁閫変腑浠讳綍鏍囩锛?);
+            else GM.notification('娌℃湁閫変腑浠讳綍鏍囩锛?, 'Danbooru 鏍囩瀵煎嚭鍣?);
             return;
         }
 
         GM.setClipboard(out.join(', '));
-        var msg = '已复制 ' + out.length + ' 个标签到剪贴板！';
+        var msg = '宸插鍒?' + out.length + ' 涓爣绛惧埌鍓创鏉匡紒';
         if (silent) showToast(msg);
-        else GM.notification(msg, 'Danbooru 标签导出器');
+        else GM.notification(msg, 'Danbooru 鏍囩瀵煎嚭鍣?);
     }
 
     // ============================================================
-    //  设置持久化
-    // ============================================================
+    //  璁剧疆鎸佷箙鍖?    // ============================================================
     var SKEY = 'dte_settings_v3';
 
     function save() {
@@ -476,7 +449,7 @@
     });
 
     // ============================================================
-    //  计数 / 预览 / 提示
+    //  璁℃暟 / 棰勮 / 鎻愮ず
     // ============================================================
     var previewDebounce = null;
 
@@ -516,22 +489,22 @@
     function summary() {
         var t = document.querySelectorAll('#tag-list input[type="checkbox"], .tag-list input[type="checkbox"]').length;
         var el = document.getElementById('tag-summary');
-        if (el) el.textContent = '共 ' + t + ' 个标签';
+        if (el) el.textContent = '鍏?' + t + ' 涓爣绛?;
     }
 
     // ============================================================
-    //  权重控件
+    //  鏉冮噸鎺т欢
     // ============================================================
     function mkWeight() {
         var c = document.createElement('span');
         c.className = 'tag-weight';
         c.style.display = 'none';
-        c.innerHTML = '<button class="w-btn wm" type="button">−</button><span class="w-val">0</span><button class="w-btn wp" type="button">+</button>';
+        c.innerHTML = '<button class="w-btn wm" type="button">鈭?/button><span class="w-val">0</span><button class="w-btn wp" type="button">+</button>';
         return c;
     }
 
     // ============================================================
-    //  分类按钮绑定
+    //  鍒嗙被鎸夐挳缁戝畾
     // ============================================================
     function bindBtns(ct, prefix) {
         ct.querySelector("[name='select_all']").onclick = function () {
@@ -552,19 +525,17 @@
     }
 
     // ============================================================
-    //  分类折叠（仅 Danbooru）
-    // ============================================================
+    //  鍒嗙被鎶樺彔锛堜粎 Danbooru锛?    // ============================================================
     function initCollapse() {
         if (isGel) return;
         document.querySelectorAll('h3.artist-tag-list, h3.character-tag-list, h3.copyright-tag-list, h3.meta-tag-list, h3.general-tag-list')
             .forEach(function (h3) {
                 var ind = document.createElement('span');
                 ind.className = 'ci';
-                ind.textContent = '▼';
+                ind.textContent = '鈻?;
                 h3.insertBefore(ind, h3.firstChild);
 
-                ind.addEventListener('click', function (e) {
-                    e.stopPropagation();
+                h3.addEventListener('click', function () {
                     var collapsed = h3.classList.toggle('collapsed');
                     var next = h3.nextElementSibling;
                     if (next) {
@@ -572,13 +543,13 @@
                         var ul = next.nextElementSibling;
                         if (ul && ul.tagName === 'UL') ul.style.display = collapsed ? 'none' : '';
                     }
-                    ind.textContent = collapsed ? '▶' : '▼';
+                    ind.textContent = collapsed ? '鈻? : '鈻?;
                 });
             });
     }
 
     // ============================================================
-    //  标签搜索过滤
+    //  鏍囩鎼滅储杩囨护
     // ============================================================
     function initTagFilter() {
         var input = document.getElementById('tag-filter');
@@ -597,7 +568,7 @@
     }
 
     // ============================================================
-    //  快捷键 Ctrl+Shift+E
+    //  蹇嵎閿?Ctrl+Shift+E
     // ============================================================
     document.addEventListener('keydown', function (e) {
         if (e.ctrlKey && e.shiftKey && (e.key === 'e' || e.key === 'E')) {
@@ -607,7 +578,7 @@
     });
 
     // ============================================================
-    //  插入 Danbooru 分类
+    //  鎻掑叆 Danbooru 鍒嗙被
     // ============================================================
     function insDan(t) {
         var h = document.querySelector('h3.' + t + '-list');
@@ -632,7 +603,7 @@
     }
 
     // ============================================================
-    //  插入 Gelbooru 分类
+    //  鎻掑叆 Gelbooru 鍒嗙被
     // ============================================================
     function insGel(t) {
         var el = document.querySelector('.' + t);
@@ -659,13 +630,13 @@
     }
 
     // ============================================================
-    //  挂载
+    //  鎸傝浇
     // ============================================================
     ['artist-tag', 'character-tag', 'copyright-tag', 'meta-tag', 'general-tag'].forEach(insDan);
     ['tag-type-artist', 'tag-type-character', 'tag-type-copyright', 'tag-type-metadata', 'tag-type-general'].forEach(insGel);
 
     // ============================================================
-    //  全局按钮
+    //  鍏ㄥ眬鎸夐挳
     // ============================================================
     (function () {
         var g = btnTpl.querySelector("[name='select_all']");
@@ -703,14 +674,13 @@
     updCount();
 
     // ============================================================
-    //  初始化
-    // ============================================================
+    //  鍒濆鍖?    // ============================================================
     summary();
     initCollapse();
     initTagFilter();
 
     // ============================================================
-    //  事件绑定
+    //  浜嬩欢缁戝畾
     // ============================================================
     document.getElementById('set-weight').onchange = function (e) {
         var v = e.target.checked;
