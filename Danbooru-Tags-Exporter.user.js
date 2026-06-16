@@ -78,6 +78,35 @@
             font-size: 11px; color: #aaa; margin-left: 6px;
         }
 
+        /* 分段选择器 */
+        .seg-group {
+            display: inline-flex;
+            border: 1px solid #bbb;
+            border-radius: 5px;
+            overflow: hidden;
+            font-size: 12px;
+            line-height: 1;
+            vertical-align: middle;
+        }
+        .seg-group .seg {
+            padding: 3px 10px;
+            cursor: pointer;
+            border-right: 1px solid #bbb;
+            background: #f8f8f8;
+            color: #555;
+            transition: background 0.12s, color 0.12s;
+            user-select: none;
+            white-space: nowrap;
+        }
+        .seg-group .seg:last-child { border-right: none; }
+        .seg-group .seg:hover { background: #eee; }
+        .seg-group input[type="radio"] { display: none; }
+        .seg-group input[type="radio"]:checked + .seg {
+            background: #4a90d9;
+            color: #fff;
+        }
+        .seg-lbl { font-size: 10px; opacity: 0.7; display: block; text-align: center; }
+
         /* 搜索框 */
         #tag-filter {
             box-sizing: border-box;
@@ -209,6 +238,10 @@
             #tag-summary { color: #888; }
             .ci { color: #777; }
             #export-preview { color: #888; }
+            .seg-group { border-color: #555; }
+            .seg-group .seg { background: #3a3a3a; color: #bbb; border-color: #555; }
+            .seg-group .seg:hover { background: #4a4a4a; }
+            .seg-group input[type="radio"]:checked + .seg { background: #4a90d9; color: #fff; }
         }
 
         /* Gelbooru 覆写 */
@@ -252,12 +285,16 @@
         '<div id="weight-format-group" style="display:none">',
         '  <div class="opt-row">',
         '    <span>格式：</span>',
-        '    <label><input type="radio" name="wf" value="sd" checked/> <code>(tag:1.5)</code> SD</label>',
-        '    <label><input type="radio" name="wf" value="nai"/> <code>1.5::tag::</code> NAI</label>',
-        '    <span style="margin-left:6px;">步进：</span>',
-        '    <label><input type="radio" name="wstep" value="0.1"/> 0.1</label>',
-        '    <label><input type="radio" name="wstep" value="0.5" checked/> 0.5</label>',
-        '    <label><input type="radio" name="wstep" value="1"/> 1</label>',
+        '    <span class="seg-group">',
+        '      <label><input type="radio" name="wf" value="sd" checked/><span class="seg">SD <span class="seg-lbl">(tag)</span></span></label>',
+        '      <label><input type="radio" name="wf" value="nai"/><span class="seg">NAI <span class="seg-lbl">::tag::</span></span></label>',
+        '    </span>',
+        '    <span>步进：</span>',
+        '    <span class="seg-group">',
+        '      <label><input type="radio" name="wstep" value="0.1"/><span class="seg">0.1</span></label>',
+        '      <label><input type="radio" name="wstep" value="0.5" checked/><span class="seg">0.5</span></label>',
+        '      <label><input type="radio" name="wstep" value="1"/><span class="seg">1</span></label>',
+        '    </span>',
         '  </div>',
         '</div>',
         '<input type="text" id="tag-filter" placeholder="筛选标签..." />',
