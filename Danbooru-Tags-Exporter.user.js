@@ -10,7 +10,7 @@
 // @updateURL    https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @downloadURL  https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @require      https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @version      0.7.3
+// @version      0.7.4
 // @description  Select tags and copy to clipboard. Category filtering, +/- weight, SD/NAI format, silent mode, collapsible categories, tag filter.
 // @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、不通知模式、折叠分类、筛选标签
 // @author       FSpark / kozeki-uii
@@ -330,9 +330,12 @@
             ref.parentNode.insertBefore(btnTpl, ref);
         }
     } else {
-        var sb = document.querySelector('#search-box');
-        if (sb) {
-            insertAfter(panel, sb);
+        // 按优先级查找插入点：#tag-list → #search-box → 第一个标签分类标题
+        var ref = document.querySelector('#tag-list')
+               || document.querySelector('#search-box')
+               || document.querySelector('h3.artist-tag-list, h3.general-tag-list');
+        if (ref) {
+            ref.parentNode.insertBefore(panel, ref);
             var h2 = panel.querySelector('h2');
             if (h2) insertAfter(btnTpl, h2);
         }
