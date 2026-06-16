@@ -667,17 +667,7 @@
 
     document.querySelectorAll('input[name="wf"]').forEach(function (r) {
         r.addEventListener('change', function () {
-            var fmt = this.value;
-            document.querySelectorAll('.w-val').forEach(function (s) {
-                var cur = parseFloat(s.textContent) || 0;
-                if (fmt === 'sd') {
-                    if (cur < 0) { s.textContent = '0.0'; return; }
-                    if (cur > 3) s.textContent = '3.0';
-                } else {
-                    if (cur < -5) s.textContent = '-5.0';
-                    if (cur > 5) s.textContent = '5.0';
-                }
-            });
+            // 切换格式时保留所有权重值不变，± 按钮和导出时会自动按当前格式处理边界
         });
     });
 
