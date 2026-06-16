@@ -10,10 +10,9 @@
 // @updateURL    https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @downloadURL  https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @require      https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @version      0.7.0
+// @version      0.7.2
 // @description  Select tags and copy to clipboard. Category filtering, +/- weight, SD/NAI format, silent mode, collapsible categories, tag filter.
-// @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、静默模式、折叠分类、筛选标签
-// @description:zh-TW  選擇標籤複製到剪貼板，分類提取、加減權重、SD/NAI 格式、靜默模式、折疊分類、篩選標籤
+// @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、不通知模式、折叠分类、筛选标签
 // @author       FSpark / kozeki-uii
 // @match        https://danbooru.donmai.us/posts/*
 // @match        https://safebooru.donmai.us/posts/*
@@ -68,12 +67,6 @@
             gap: 3px;
         }
         #tags-exporter-setting .opt-row label input { margin: 0; }
-        #tags-exporter-setting code {
-            font-size: 0.9em;
-            background: rgba(0,0,0,0.06);
-            padding: 1px 4px;
-            border-radius: 3px;
-        }
         #tags-exporter-setting .hint {
             font-size: 11px; color: #aaa; margin-left: 6px;
         }
@@ -89,7 +82,7 @@
             vertical-align: middle;
         }
         .seg-group .seg {
-            padding: 3px 10px;
+            padding: 4px 12px;
             cursor: pointer;
             border-right: 1px solid #bbb;
             background: #f8f8f8;
@@ -97,65 +90,59 @@
             transition: background 0.12s, color 0.12s;
             user-select: none;
             white-space: nowrap;
+            text-align: center;
         }
         .seg-group .seg:last-child { border-right: none; }
         .seg-group .seg:hover { background: #eee; }
         .seg-group input[type="radio"] { display: none; }
         .seg-group input[type="radio"]:checked + .seg {
-            background: #4a90d9;
+            background: #5aad5a;
             color: #fff;
         }
-        .seg-lbl { font-size: 10px; opacity: 0.7; display: block; text-align: center; }
 
-        /* 搜索框 */
-        #tag-filter {
-            box-sizing: border-box;
-            width: 100%;
-            padding: 3px 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 12px;
-            margin: 3px 0;
-            outline: none;
-        }
-        #tag-filter:focus { border-color: #888; }
-        @media (prefers-color-scheme: dark) {
-            #tag-filter {
-                background: #333; border-color: #555; color: #ddd;
-            }
-            #tag-filter:focus { border-color: #888; }
-            #tag-filter::placeholder { color: #777; }
-        }
-
-        /* 预览栏 */
-        #export-preview {
-            font-size: 11px;
-            color: #999;
-            white-space: nowrap;
+        /* 操作按钮组（全选、取消、反选、导出） */
+        .action-group {
+            display: inline-flex;
+            border: 1px solid #bbb;
+            border-radius: 5px;
             overflow: hidden;
-            text-overflow: ellipsis;
-            min-height: 1.2em;
         }
+        .action-group .act-btn {
+            padding: 4px 14px;
+            border: none;
+            border-right: 1px solid #bbb;
+            background: #f8f8f8;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1.5;
+            transition: background 0.12s;
+            color: #333;
+            font-family: inherit;
+        }
+        .action-group .act-btn:last-child { border-right: none; }
+        .action-group .act-btn:hover { background: #eee; }
+        .action-group .act-btn:active { background: #ddd; }
 
         #tags-exporter-container {
             display: flex;
             align-items: center;
             flex-wrap: wrap;
-            gap: 4px;
-            margin: 4px 0;
+            gap: 8px;
+            margin: 5px 0;
         }
-        #tags-exporter-container button, #tag-list button {
-            padding: 2px 10px;
-            border: 1px solid #bbb;
-            border-radius: 4px;
-            background: #f8f8f8;
-            cursor: pointer;
+
+        /* 搜索框 */
+        #tag-filter {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 4px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             font-size: 12px;
-            line-height: 1.6;
-            transition: background 0.15s;
+            margin: 4px 0;
+            outline: none;
         }
-        #tags-exporter-container button:hover, #tag-list button:hover { background: #eee; }
-        #tags-exporter-container button:active, #tag-list button:active { background: #ddd; }
+        #tag-filter:focus { border-color: #888; }
 
         /* 折叠指示器 */
         .ci {
@@ -165,7 +152,6 @@
             color: #aaa;
             cursor: pointer;
             user-select: none;
-            transition: transform 0.15s;
         }
         h3.artist-tag-list, h3.character-tag-list,
         h3.copyright-tag-list, h3.meta-tag-list, h3.general-tag-list {
@@ -197,11 +183,19 @@
         }
 
         .tag-count {
-            font-size: 12px; color: #999; margin-left: 6px;
-            cursor: default;
+            font-size: 12px; color: #999; cursor: default;
         }
         #tag-summary {
             font-size: 11px; color: #aaa; margin-top: 2px;
+        }
+
+        /* 预览（多行） */
+        #export-preview {
+            font-size: 11px;
+            color: #999;
+            line-height: 1.4;
+            margin: 2px 0;
+            word-break: break-all;
         }
 
         #weight-format-group .opt-row { margin: 2px 0; }
@@ -224,14 +218,11 @@
                 background: rgba(255,255,255,0.04);
                 border-color: rgba(255,255,255,0.08);
             }
-            #tags-exporter-setting code { background: rgba(255,255,255,0.08); }
-            #tags-exporter-container button, #tag-list button {
-                background: #3a3a3a; border-color: #555; color: #ddd;
-            }
-            #tags-exporter-container button:hover, #tag-list button:hover { background: #4a4a4a; }
-            .tag-weight .w-btn {
-                background: #444; border-color: #666; color: #eee;
-            }
+            #tags-exporter-container button, #tag-list button { background: #3a3a3a; border-color: #555; color: #ddd; }
+            #tag-filter { background: #333; border-color: #555; color: #ddd; }
+            #tag-filter:focus { border-color: #888; }
+            #tag-filter::placeholder { color: #777; }
+            .tag-weight .w-btn { background: #444; border-color: #666; color: #eee; }
             .tag-weight .w-btn:hover { background: #555; }
             .tag-weight .w-val { color: #ccc; }
             .tag-count { color: #999; }
@@ -241,7 +232,10 @@
             .seg-group { border-color: #555; }
             .seg-group .seg { background: #3a3a3a; color: #bbb; border-color: #555; }
             .seg-group .seg:hover { background: #4a4a4a; }
-            .seg-group input[type="radio"]:checked + .seg { background: #4a90d9; color: #fff; }
+            .seg-group input[type="radio"]:checked + .seg { background: #5aad5a; color: #fff; }
+            .action-group { border-color: #555; }
+            .action-group .act-btn { background: #3a3a3a; color: #ddd; border-color: #555; }
+            .action-group .act-btn:hover { background: #4a4a4a; }
         }
 
         /* Gelbooru 覆写 */
@@ -280,14 +274,14 @@
         '  <label><input type="checkbox" id="bracket-escape" checked/> 转义括号</label>',
         '  <label><input type="checkbox" id="export-metadata" checked/> 元数据</label>',
         '  <label><input type="checkbox" id="set-weight"/> 权重</label>',
-        '  <label><input type="checkbox" id="silent-export"/> 静默</label>',
+        '  <label><input type="checkbox" id="silent-export"/> 不通知</label>',
         '</div>',
         '<div id="weight-format-group" style="display:none">',
         '  <div class="opt-row">',
         '    <span>格式：</span>',
         '    <span class="seg-group">',
-        '      <label><input type="radio" name="wf" value="sd" checked/><span class="seg">SD <span class="seg-lbl">(tag)</span></span></label>',
-        '      <label><input type="radio" name="wf" value="nai"/><span class="seg">NAI <span class="seg-lbl">::tag::</span></span></label>',
+        '      <label><input type="radio" name="wf" value="sd" checked/><span class="seg">SD</span></label>',
+        '      <label><input type="radio" name="wf" value="nai"/><span class="seg">NAI</span></label>',
         '    </span>',
         '    <span>步进：</span>',
         '    <span class="seg-group">',
@@ -308,10 +302,12 @@
     var btnTpl = document.createElement('div');
     btnTpl.id = 'tags-exporter-container';
     btnTpl.innerHTML = [
-        '<button name="select_all">全选</button>',
-        '<button name="select_none">取消</button>',
-        '<button name="invert_select">反选</button>',
-        '<button name="export">导出</button>',
+        '<span class="action-group">',
+        '  <button name="select_all" class="act-btn">全选</button>',
+        '  <button name="select_none" class="act-btn">取消</button>',
+        '  <button name="invert_select" class="act-btn">反选</button>',
+        '  <button name="export" class="act-btn">导出</button>',
+        '</span>',
         '<span class="tag-count"></span>'
     ].join('');
 
@@ -461,17 +457,11 @@
         document.querySelectorAll('#tag-list input[type="checkbox"]:checked, .tag-list input[type="checkbox"]:checked')
             .forEach(function (cb) { names.push(cb.value.replaceAll('_', ' ')); });
 
-        // 预览（前 60 字符）
         var preEl = document.getElementById('export-preview');
         if (preEl) {
-            if (!names.length) { preEl.textContent = ''; }
-            else {
-                var full = names.join(', ');
-                preEl.textContent = full.length > 60 ? full.slice(0, 57) + '...' : full;
-            }
+            preEl.textContent = names.length ? names.join(', ') : '';
         }
 
-        // tooltip（完整列表）
         var tip = names.length ? names.join(', ') : '';
         document.querySelectorAll('.tag-count').forEach(function (el) { el.title = tip; });
     }
@@ -483,7 +473,6 @@
         var el = ctx.querySelector('.tag-count');
         if (el) el.textContent = c > 0 ? (c + '/' + t) : '';
 
-        // 延迟合并的预览更新
         if (previewDebounce) clearTimeout(previewDebounce);
         previewDebounce = setTimeout(updPreviewAndTooltip, 50);
     }
@@ -639,21 +628,33 @@
     // ============================================================
     //  全局按钮
     // ============================================================
-    btnTpl.querySelector("[name='select_all']").onclick = function () {
-        document.querySelectorAll('#tag-list input[type="checkbox"], .tag-list input[type="checkbox"]').forEach(function (b) { b.checked = true; });
-        updCount();
-    };
-    btnTpl.querySelector("[name='select_none']").onclick = function () {
-        document.querySelectorAll('#tag-list input[type="checkbox"], .tag-list input[type="checkbox"]').forEach(function (b) { b.checked = false; });
-        updCount();
-    };
-    btnTpl.querySelector("[name='invert_select']").onclick = function () {
-        document.querySelectorAll('#tag-list input[type="checkbox"], .tag-list input[type="checkbox"]').forEach(function (b) { b.checked = !b.checked; });
-        updCount();
-    };
-    btnTpl.querySelector("[name='export']").onclick = function () {
-        doExport('#tag-list input[type="checkbox"]:checked, .tag-list input[type="checkbox"]:checked');
-    };
+    (function () {
+        var g = btnTpl.querySelector("[name='select_all']");
+        if (g) g.onclick = function () {
+            document.querySelectorAll('#tag-list input[type="checkbox"], .tag-list input[type="checkbox"]').forEach(function (b) { b.checked = true; });
+            updCount();
+        };
+    })();
+    (function () {
+        var g = btnTpl.querySelector("[name='select_none']");
+        if (g) g.onclick = function () {
+            document.querySelectorAll('#tag-list input[type="checkbox"], .tag-list input[type="checkbox"]').forEach(function (b) { b.checked = false; });
+            updCount();
+        };
+    })();
+    (function () {
+        var g = btnTpl.querySelector("[name='invert_select']");
+        if (g) g.onclick = function () {
+            document.querySelectorAll('#tag-list input[type="checkbox"], .tag-list input[type="checkbox"]').forEach(function (b) { b.checked = !b.checked; });
+            updCount();
+        };
+    })();
+    (function () {
+        var g = btnTpl.querySelector("[name='export']");
+        if (g) g.onclick = function () {
+            doExport('#tag-list input[type="checkbox"]:checked, .tag-list input[type="checkbox"]:checked');
+        };
+    })();
 
     document.addEventListener('change', function (e) {
         if (e.target.type === 'checkbox' && e.target.name && e.target.name.endsWith('s')) {
