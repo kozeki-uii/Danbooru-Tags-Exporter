@@ -10,7 +10,7 @@
 // @updateURL    https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @downloadURL  https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @require      https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @version      0.8.0
+// @version      0.8.1
 // @description  Select tags and copy to clipboard. Category filtering, +/- weight, SD/NAI format, silent mode, collapsible categories, tag filter.
 // @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、不通知模式、折叠分类、筛选标签
 // @author       FSpark / kozeki-uii
@@ -43,7 +43,7 @@
             border-radius: 6px;
             padding: 8px 12px;
             margin: 6px 0;
-            font-size: 12px;
+            font-size: 13px;
             line-height: 1.5;
             width: 100%;
             box-sizing: border-box;
@@ -51,7 +51,7 @@
         }
         #tags-exporter-setting h2 {
             margin: 0 0 4px 0;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             color: inherit;
             display: flex;
