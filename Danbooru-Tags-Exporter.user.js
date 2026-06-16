@@ -320,14 +320,7 @@
 
     function adjWeight(cur, delta, fmt, step) {
         var nv = Math.round((cur + delta * step) * 100) / 100;
-        if (fmt === 'sd') {
-            // 值已在范围外时，只允许往回调，不允许继续往外
-            if (cur > 3) return delta > 0 ? cur : Math.max(0, nv);
-            if (cur < 0) return delta < 0 ? cur : Math.min(3, nv);
-            if (nv > 3) return 3; if (nv < 0) return 0; return nv;
-        }
-        if (cur > 5) return delta > 0 ? cur : Math.max(-5, nv);
-        if (cur < -5) return delta < 0 ? cur : Math.min(5, nv);
+        if (fmt === 'sd') { if (nv > 3) return 3; if (nv < 0) return 0; return nv; }
         if (nv > 5) return 5; if (nv < -5) return -5; return nv;
     }
 
@@ -674,7 +667,17 @@
 
     document.querySelectorAll('input[name="wf"]').forEach(function (r) {
         r.addEventListener('change', function () {
-            // 切换格式时保留所有权重值不变，± 按钮和导出时会自动按当前格式处理边界
+            var fmt = this.value;
+            document.querySelectorAll('.w-val').forEach(function (s) {
+                var cur = parseFloat(s.textContent) || 0;
+                if (fmt === 'sd') {
+                    if (cur < 0) { s.textContent = '0.0'; return; }
+                    if (cur > 3) s.textContent = '3.0';
+                } else {
+                    if (cur < -5) s.textContent = '-5.0';
+                    if (cur > 5) s.textContent = '5.0';
+                }
+            });
         });
     });
 
