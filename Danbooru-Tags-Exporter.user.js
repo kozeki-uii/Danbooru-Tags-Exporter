@@ -10,7 +10,7 @@
 // @updateURL    https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @downloadURL  https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @require      https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @version      0.0.1
+// @version      0.8.0
 // @description  Select tags and copy to clipboard. Category filtering, +/- weight, SD/NAI format, silent mode, collapsible categories, tag filter.
 // @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、不通知模式、折叠分类、筛选标签
 // @author       FSpark / kozeki-uii
@@ -43,7 +43,7 @@
             border-radius: 6px;
             padding: 8px 12px;
             margin: 6px 0;
-            font-size: 13px;
+            font-size: 12px;
             line-height: 1.5;
             width: 100%;
             box-sizing: border-box;
@@ -51,7 +51,7 @@
         }
         #tags-exporter-setting h2 {
             margin: 0 0 4px 0;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: inherit;
             display: flex;
@@ -75,7 +75,7 @@
         }
         #tags-exporter-setting .opt-row label input { margin: 0; }
         #tags-exporter-setting .opt-row > span:first-child {
-            min-width: 3.5em;
+            min-width: 2.5em;
             flex-shrink: 0;
         }
         #tags-exporter-setting .hint {
@@ -179,8 +179,8 @@
             margin: 0 3px;
         }
         .tag-weight .w-btn {
-            width: 20px; height: 20px; padding: 0;
-            font-size: 13px; font-weight: bold; line-height: 1;
+            width: 16px; height: 16px; padding: 0;
+            font-size: 11px; font-weight: bold; line-height: 1;
             cursor: pointer; border: 1px solid #bbb; border-radius: 3px;
             background: #f5f5f5; color: #333; user-select: none;
             display: inline-flex; align-items: center; justify-content: center;
@@ -189,8 +189,8 @@
         .tag-weight .w-btn:hover { background: #ddd; }
         .tag-weight .w-btn:active { background: #ccc; }
         .tag-weight .w-val {
-            display: inline-block; min-width: 22px; text-align: center;
-            font-size: 12px; font-weight: 600; font-family: monospace;
+            display: inline-block; min-width: 18px; text-align: center;
+            font-size: 11px; font-weight: 600; font-family: monospace;
             color: #555;
         }
 
@@ -292,7 +292,7 @@
     var panel = document.createElement('section');
     panel.id = 'tags-exporter-setting';
     panel.innerHTML = [
-        '<h2>Danbooru 标签导出器 <span class="hint">Ctrl+Shift+E</span></h2>',
+        '<h2>Danbooru 标签导出器 <span class="hint">快捷复制:Ctrl+Shift+E</span></h2>',
         '<div class="opt-row">',
         '  <label><input type="checkbox" id="bracket-escape" checked/> 转义括号</label>',
         '  <label><input type="checkbox" id="export-metadata" checked/> 元数据</label>',
@@ -331,7 +331,7 @@
         '  <button name="select_all" class="act-btn">全选</button>',
         '  <button name="select_none" class="act-btn">取消</button>',
         '  <button name="invert_select" class="act-btn">反选</button>',
-        '  <button name="export" class="act-btn">导出</button>',
+        '  <button name="export" class="act-btn">复制</button>',
         '</span>',
         '<span class="tag-count"></span>'
     ].join('');
