@@ -320,7 +320,14 @@
 
     function adjWeight(cur, delta, fmt, step) {
         var nv = Math.round((cur + delta * step) * 100) / 100;
-        if (fmt === 'sd') { if (nv < 0) return 0; if (nv > 3) return 3; return nv; }
+        if (fmt === 'sd') {
+            // 值已在范围外时，只允许往回调，不允许继续往外
+            if (cur > 3) return delta > 0 ? cur : Math.max(0, nv);
+            if (cur < 0) return delta < 0 ? cur : Math.min(3, nv);
+            if (nv > 3) return 3; if (nv < 0) return 0; return nv;
+        }
+        if (cur > 5) return delta > 0 ? cur : Math.max(-5, nv);
+        if (cur < -5) return delta < 0 ? cur : Math.min(5, nv);
         if (nv > 5) return 5; if (nv < -5) return -5; return nv;
     }
 
