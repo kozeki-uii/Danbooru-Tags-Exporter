@@ -10,9 +10,9 @@
 // @updateURL    https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @downloadURL  https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @require      https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @version      0.8.1
+// @version      0.8.2
 // @description  Select tags and copy to clipboard. Category filtering, +/- weight, SD/NAI format, silent mode, collapsible categories, tag filter.
-// @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、不通知模式、折叠分类、筛选标签
+// @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、关闭通知、折叠分类、筛选标签
 // @author       FSpark / kozeki-uii
 // @match        https://danbooru.donmai.us/posts/*
 // @match        https://safebooru.donmai.us/posts/*
@@ -292,7 +292,7 @@
     var panel = document.createElement('section');
     panel.id = 'tags-exporter-setting';
     panel.innerHTML = [
-        '<h2>Danbooru 标签导出器 <span class="hint">快捷复制:Ctrl+Shift+E</span></h2>',
+        '<h2>Danbooru 标签复制器 <span class="hint">快捷复制:Ctrl+Shift+E</span></h2>',
         '<div class="opt-row">',
         '  <label><input type="checkbox" id="bracket-escape" checked/> 转义括号</label>',
         '  <label><input type="checkbox" id="export-metadata" checked/> 元数据</label>',
