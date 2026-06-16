@@ -10,7 +10,7 @@
 // @updateURL    https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @downloadURL  https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @require      https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @version      0.7.6
+// @version      0.7.7
 // @description  Select tags and copy to clipboard. Category filtering, +/- weight, SD/NAI format, silent mode, collapsible categories, tag filter.
 // @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、不通知模式、折叠分类、筛选标签
 // @author       FSpark / kozeki-uii
@@ -211,6 +211,17 @@
         }
 
         #weight-format-group .opt-row { margin: 2px 0; }
+
+        /* 搜索高亮 */
+        .phl {
+            background: #ffc107;
+            color: #333;
+            border-radius: 2px;
+            padding: 0 2px;
+        }
+        @media (prefers-color-scheme: dark) {
+            .phl { color: #222; }
+        }
 
         /* Toast */
         #exporter-toast {
@@ -476,7 +487,15 @@
 
         var preEl = document.getElementById('export-preview');
         if (preEl) {
-            preEl.textContent = names.length ? names.join(', ') : '';
+            var text = names.length ? names.join(', ') : '';
+            var q = (document.getElementById('tag-filter').value || '').trim();
+            if (q) {
+                var esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                var re = new RegExp('(' + esc + ')', 'gi');
+                preEl.innerHTML = text.replace(re, '<span class="phl">$1</span>');
+            } else {
+                preEl.textContent = text;
+            }
         }
 
         var tip = names.length ? names.join(', ') : '';
@@ -571,6 +590,8 @@
                 var name = cb ? cb.value.toLowerCase() : '';
                 li.style.display = name.indexOf(q) > -1 ? '' : 'none';
             });
+            if (previewDebounce) clearTimeout(previewDebounce);
+            previewDebounce = setTimeout(updPreviewAndTooltip, 50);
         });
     }
 
