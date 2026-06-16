@@ -10,7 +10,7 @@
 // @updateURL    https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @downloadURL  https://raw.githubusercontent.com/kozeki-uii/Danbooru-Tags-Exporter/main/Danbooru-Tags-Exporter.user.js
 // @require      https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
-// @version      0.7.4
+// @version      0.7.5
 // @description  Select tags and copy to clipboard. Category filtering, +/- weight, SD/NAI format, silent mode, collapsible categories, tag filter.
 // @description:zh-CN  选择标签复制到剪贴板，分类提取、加减权重、SD/NAI 格式、不通知模式、折叠分类、筛选标签
 // @author       FSpark / kozeki-uii
@@ -51,6 +51,10 @@
             font-size: 13px;
             font-weight: 600;
             color: inherit;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0 6px;
         }
         #tags-exporter-setting .opt-row {
             display: flex;
@@ -129,6 +133,7 @@
             flex-wrap: wrap;
             gap: 8px;
             margin: 5px 0;
+            justify-content: flex-start;
         }
 
         /* 搜索框 */
@@ -274,7 +279,7 @@
         '  <label><input type="checkbox" id="bracket-escape" checked/> 转义括号</label>',
         '  <label><input type="checkbox" id="export-metadata" checked/> 元数据</label>',
         '  <label><input type="checkbox" id="set-weight"/> 权重</label>',
-        '  <label><input type="checkbox" id="silent-export"/> 不通知</label>',
+        '  <label><input type="checkbox" id="silent-export"/> 关闭通知</label>',
         '</div>',
         '<div id="weight-format-group" style="display:none">',
         '  <div class="opt-row">',
@@ -283,6 +288,8 @@
         '      <label><input type="radio" name="wf" value="sd" checked/><span class="seg">SD</span></label>',
         '      <label><input type="radio" name="wf" value="nai"/><span class="seg">NAI</span></label>',
         '    </span>',
+        '  </div>',
+        '  <div class="opt-row">',
         '    <span>步进：</span>',
         '    <span class="seg-group">',
         '      <label><input type="radio" name="wstep" value="0.1"/><span class="seg">0.1</span></label>',
